@@ -1377,9 +1377,9 @@ fun FilterButton(
         colors = ButtonDefaults.buttonColors(
             containerColor = if (selected) {
                 if (text.contains("Favorites")) {
-                    Color(0xFFFFC107) // Gold for Favorites
+                    Color(0xFFFFC107)
                 } else {
-                    MaterialTheme.colorScheme.primary // Blue for All
+                    MaterialTheme.colorScheme.primaryContainer
                 }
             } else {
                 MaterialTheme.colorScheme.surfaceVariant
