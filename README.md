@@ -75,6 +75,29 @@ The application uses Room for persistent local storage and Android's alarm/notif
 
 BrainDump supports natural-language reminder input such as:
 
-```text
+```
+text
 Study Java at 7 PM
 Call mom tomorrow at 6 PM
+
+```
+
+## 📱 App Screenshots
+
+### 🏠 Home
+![Home](screenshots/home%20page.jpeg)
+
+### 🧠 All Thoughts
+![All Thoughts](screenshots/all-thoughts.jpeg)
+
+### ⭐ Favorites
+![Favorites](screenshots/favorites.jpeg)
+
+### 🌙 Light Mode
+![Light Mode](screenshots/light-mode.jpeg)
+
+### 🔔 Notifications
+![Notification](screenshots/notification.jpeg)
+
+### 💾 Saved Thought
+![Saved Thought](screenshots/saved%20thought%20pop%20up.jpeg)
