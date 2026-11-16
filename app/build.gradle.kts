@@ -55,6 +55,7 @@ dependencies {
     implementation(
         "androidx.room3:room3-runtime:$room_version"
     )
+    implementation("com.google.ai.edge.litertlm:litertlm-android:0.16.1")
 
     ksp(
         "androidx.room3:room3-compiler:$room_version"

@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,6 +38,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -334,7 +337,8 @@ fun HomeScreen(
                 horizontal = 20.dp,
                 vertical = 16.dp
             )
-            .navigationBarsPadding(),
+            .navigationBarsPadding()
+            .verticalScroll(rememberScrollState()),
 
         horizontalAlignment =
             Alignment.CenterHorizontally
@@ -596,6 +600,8 @@ fun HomeScreen(
             Text("＋ Save Thought")
         }
 
+        // LOCAL AI TEST
+        LocalAITestSection()
 
         if (savedMessage) {
 
@@ -624,7 +630,7 @@ fun HomeScreen(
 
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f),
+                .height(220.dp),
 
             horizontalAlignment =
                 Alignment.CenterHorizontally,
@@ -1913,6 +1919,141 @@ fun formatTimestamp(
                 "dd MMM yyyy • hh:mm a",
                 Locale.getDefault()
             ).format(date)
+        }
+    }
+}
+
+
+// ============================================================
+// LOCAL AI TEST - GEMMA 3 1B
+// ============================================================
+
+@Composable
+fun LocalAITestSection() {
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    val aiManager = remember {
+        com.example.braindump.ai.LocalAIManager(
+            context.applicationContext
+        )
+    }
+
+    val scope = rememberCoroutineScope()
+
+    var loading by remember { mutableStateOf(false) }
+    var status by remember { mutableStateOf("AI not initialized") }
+    var response by remember { mutableStateOf("") }
+
+    DisposableEffect(aiManager) {
+        onDispose {
+            aiManager.close()
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp)
+    ) {
+        Text(
+            text = "🤖 BrainDump Local AI",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "Powered by Gemma 3 1B · On-device AI",
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontSize = 13.sp
+        )
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        Button(
+            onClick = {
+                if (!loading) {
+                    scope.launch {
+                        loading = true
+                        response = ""
+                        status = "Loading Gemma model..."
+
+                        try {
+                            val initialization = aiManager.initialize()
+
+                            initialization.fold(
+                                onSuccess = {
+                                    status = "Gemma loaded. Generating response..."
+
+                                    val result = aiManager.generateResponse(
+                                        "Give me three practical ways to " +
+                                                "organize my thoughts. Keep your answer concise."
+                                    )
+
+                                    result.fold(
+                                        onSuccess = {
+                                            response = it
+                                            status = "Response generated successfully!"
+                                        },
+                                        onFailure = {
+                                            status = "Generation failed: ${it.message}"
+                                        }
+                                    )
+                                },
+                                onFailure = {
+                                    status = "Model loading failed: ${it.message}"
+                                }
+                            )
+                        } catch (e: Exception) {
+                            status = "Error: ${e.message}"
+                        } finally {
+                            loading = false
+                        }
+                    }
+                }
+            },
+            enabled = !loading,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                if (loading) "⏳ Running Gemma..."
+                else "🧠 Test Local AI"
+            )
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Text(
+            text = status,
+            color = MaterialTheme.colorScheme.primary,
+            fontSize = 13.sp
+        )
+
+        if (response.isNotBlank()) {
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Card(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = "Gemma's Response",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 17.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Text(
+                        text = response,
+                        fontSize = 15.sp,
+                        lineHeight = 23.sp
+                    )
+                }
+            }
         }
     }
 }
